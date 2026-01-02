@@ -65,10 +65,14 @@ export function Users() {
     if (res.success && res.data) {
       // If a company was selected, add user to that company with the selected role
       if (selectedCompanyId) {
-        await addUserToCompany(selectedCompanyId, {
+        const accessRes = await addUserToCompany(selectedCompanyId, {
           user_id: res.data.id,
           role: selectedRole,
         });
+        if (!accessRes.success) {
+          // User created but company assignment failed - still close modal and refresh
+          console.warn('User created but company assignment failed:', accessRes.error?.message);
+        }
       }
       setIsModalOpen(false);
       setFormData({ email: '', name: '' });

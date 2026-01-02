@@ -22,7 +22,7 @@ const COMPANY_STATUSES: CompanyStatus[] = ['active', 'inactive', 'suspended'];
 const USER_STATUSES: UserStatus[] = ['active', 'inactive', 'suspended'];
 const ASSET_STATUSES: AssetStatus[] = ['active', 'inactive', 'disposed', 'maintenance'];
 const ASSET_TYPES: AssetType[] = ['hardware', 'software', 'license', 'other'];
-const ACCESS_ROLES: AccessRole[] = ['owner', 'admin', 'member', 'viewer'];
+const ACCESS_ROLES: AccessRole[] = ['OWNER', 'ADMIN', 'MEMBER', 'READ_ONLY'];
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
