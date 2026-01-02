@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Users as UsersIcon } from 'lucide-react';
+import { Plus, Users as UsersIcon, Trash2 } from 'lucide-react';
 import {
   Button,
   Table,
@@ -9,7 +9,7 @@ import {
   Input,
   Select,
 } from '../components/ui';
-import { getUsers, createUser, getCompanies, addUserToCompany } from '../api';
+import { getUsers, createUser, getCompanies, addUserToCompany, deleteUser } from '../api';
 import type { User, CreateUserRequest, Company, AccessRole } from '../types';
 
 export function Users() {
@@ -24,6 +24,11 @@ export function Users() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [selectedRole, setSelectedRole] = useState<AccessRole>('MEMBER');
+  
+  // Delete state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function fetchUsers() {
     setLoading(true);
@@ -76,6 +81,20 @@ export function Users() {
     setSubmitting(false);
   }
 
+  async function handleDeleteUser() {
+    if (!userToDelete) return;
+    setDeleting(true);
+    const res = await deleteUser(userToDelete.id);
+    if (res.success) {
+      setDeleteConfirmOpen(false);
+      setUserToDelete(null);
+      fetchUsers();
+    } else {
+      alert(res.error?.message || 'Failed to delete user');
+    }
+    setDeleting(false);
+  }
+
   const columns = [
     {
       key: 'name',
@@ -110,6 +129,23 @@ export function Users() {
         <span className="text-text-secondary">
           {new Date(user.created_at).toLocaleDateString()}
         </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      render: (user: User) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setUserToDelete(user);
+            setDeleteConfirmOpen(true);
+          }}
+          className="p-2 text-text-secondary hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          title="Delete user"
+        >
+          <Trash2 size={16} />
+        </button>
       ),
     },
   ];
@@ -224,6 +260,43 @@ export function Users() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setUserToDelete(null);
+        }}
+        title="Delete User"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-text-secondary">
+            Are you sure you want to delete <strong className="text-text-primary">{userToDelete?.name}</strong>?
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                setUserToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleDeleteUser}
+              loading={deleting}
+              className="!bg-error hover:!bg-red-700"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

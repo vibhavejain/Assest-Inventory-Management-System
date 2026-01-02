@@ -88,6 +88,12 @@ export async function updateCompany(id: string, data: UpdateCompanyRequest) {
   });
 }
 
+export async function deleteCompany(id: string) {
+  return apiFetch<void>(`/companies/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // ============================================================================
 // Users API
 // ============================================================================
@@ -114,6 +120,12 @@ export async function updateUser(id: string, data: UpdateUserRequest) {
   return apiFetch<User>(`/users/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
+  });
+}
+
+export async function deleteUser(id: string) {
+  return apiFetch<void>(`/users/${id}`, {
+    method: 'DELETE',
   });
 }
 
@@ -176,6 +188,12 @@ export async function updateAsset(id: string, data: UpdateAssetRequest) {
   return apiFetch<Asset>(`/assets/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
+  });
+}
+
+export async function deleteAsset(id: string) {
+  return apiFetch<void>(`/assets/${id}`, {
+    method: 'DELETE',
   });
 }
 

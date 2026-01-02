@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Package, Filter } from 'lucide-react';
+import { Plus, Package, Filter, Trash2 } from 'lucide-react';
 import {
   Card,
   Button,
@@ -10,7 +10,7 @@ import {
   Input,
   Select,
 } from '../components/ui';
-import { getAssets, getCompanies, createAsset } from '../api';
+import { getAssets, getCompanies, createAsset, deleteAsset } from '../api';
 import type { Asset, Company, CreateAssetRequest, AssetType, AssetStatus } from '../types';
 
 export function Assets() {
@@ -21,6 +21,11 @@ export function Assets() {
   const [formData, setFormData] = useState<Partial<CreateAssetRequest>>({});
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Delete state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Filters
   const [filterType, setFilterType] = useState<string>('');
@@ -91,6 +96,20 @@ export function Assets() {
     { value: 'disposed', label: 'Disposed' },
   ];
 
+  async function handleDeleteAsset() {
+    if (!assetToDelete) return;
+    setDeleting(true);
+    const res = await deleteAsset(assetToDelete.id);
+    if (res.success) {
+      setDeleteConfirmOpen(false);
+      setAssetToDelete(null);
+      fetchAssets();
+    } else {
+      alert(res.error?.message || 'Failed to delete asset');
+    }
+    setDeleting(false);
+  }
+
   const columns = [
     {
       key: 'name',
@@ -132,6 +151,23 @@ export function Assets() {
         <span className="text-text-secondary">
           {new Date(asset.created_at).toLocaleDateString()}
         </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      render: (asset: Asset) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setAssetToDelete(asset);
+            setDeleteConfirmOpen(true);
+          }}
+          className="p-2 text-text-secondary hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          title="Delete asset"
+        >
+          <Trash2 size={16} />
+        </button>
       ),
     },
   ];
@@ -263,6 +299,43 @@ export function Assets() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setAssetToDelete(null);
+        }}
+        title="Delete Asset"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-text-secondary">
+            Are you sure you want to delete <strong className="text-text-primary">{assetToDelete?.name}</strong>?
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                setAssetToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleDeleteAsset}
+              loading={deleting}
+              className="!bg-error hover:!bg-red-700"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

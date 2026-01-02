@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Building2 } from 'lucide-react';
+import { Plus, Building2, Trash2 } from 'lucide-react';
 import {
   Button,
   Table,
@@ -10,7 +10,7 @@ import {
   Input,
   Select,
 } from '../components/ui';
-import { getCompanies, createCompany } from '../api';
+import { getCompanies, createCompany, deleteCompany } from '../api';
 import type { Company, CreateCompanyRequest } from '../types';
 
 export function Companies() {
@@ -22,6 +22,11 @@ export function Companies() {
   const [formData, setFormData] = useState<CreateCompanyRequest>({ name: '' });
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  
+  // Delete state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function fetchCompanies() {
     setLoading(true);
@@ -58,6 +63,20 @@ export function Companies() {
     setSubmitting(false);
   }
 
+  async function handleDeleteCompany() {
+    if (!companyToDelete) return;
+    setDeleting(true);
+    const res = await deleteCompany(companyToDelete.id);
+    if (res.success) {
+      setDeleteConfirmOpen(false);
+      setCompanyToDelete(null);
+      fetchCompanies();
+    } else {
+      alert(res.error?.message || 'Failed to delete company');
+    }
+    setDeleting(false);
+  }
+
   const columns = [
     {
       key: 'name',
@@ -87,6 +106,23 @@ export function Companies() {
         <span className="text-text-secondary">
           {new Date(company.created_at).toLocaleDateString()}
         </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      render: (company: Company) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setCompanyToDelete(company);
+            setDeleteConfirmOpen(true);
+          }}
+          className="p-2 text-text-secondary hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          title="Delete company"
+        >
+          <Trash2 size={16} />
+        </button>
       ),
     },
   ];
@@ -171,6 +207,43 @@ export function Companies() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setCompanyToDelete(null);
+        }}
+        title="Delete Company"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-text-secondary">
+            Are you sure you want to delete <strong className="text-text-primary">{companyToDelete?.name}</strong>?
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                setCompanyToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleDeleteCompany}
+              loading={deleting}
+              className="!bg-error hover:!bg-red-700"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
