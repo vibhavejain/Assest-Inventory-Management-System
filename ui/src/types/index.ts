@@ -7,7 +7,7 @@ export type CompanyStatus = 'active' | 'inactive' | 'suspended';
 export type UserStatus = 'active' | 'inactive' | 'suspended';
 export type AssetStatus = 'active' | 'inactive' | 'disposed' | 'maintenance';
 export type AssetType = 'hardware' | 'software' | 'license' | 'other';
-export type AccessRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type AccessRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'READ_ONLY';
 export type EntityType = 'company' | 'user' | 'company_access' | 'asset';
 export type AuditAction = 'create' | 'update' | 'delete';
 

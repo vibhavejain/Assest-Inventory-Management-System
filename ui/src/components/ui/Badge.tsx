@@ -48,13 +48,13 @@ export function getStatusVariant(status: string): BadgeProps['variant'] {
 // Helper function to get badge variant from role
 export function getRoleVariant(role: string): BadgeProps['variant'] {
   switch (role) {
-    case 'owner':
+    case 'OWNER':
       return 'error';
-    case 'admin':
+    case 'ADMIN':
       return 'warning';
-    case 'member':
+    case 'MEMBER':
       return 'info';
-    case 'viewer':
+    case 'READ_ONLY':
       return 'default';
     default:
       return 'default';

@@ -45,7 +45,7 @@ export function CompanyDetail() {
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'member' | 'viewer'>('member');
+  const [selectedRole, setSelectedRole] = useState<'ADMIN' | 'MEMBER' | 'READ_ONLY'>('MEMBER');
   const [addUserSubmitting, setAddUserSubmitting] = useState(false);
   const [addUserError, setAddUserError] = useState('');
 
@@ -127,7 +127,7 @@ export function CompanyDetail() {
     if (res.success) {
       setIsAddUserModalOpen(false);
       setSelectedUserId('');
-      setSelectedRole('member');
+      setSelectedRole('MEMBER');
       // Refresh users list
       const usersRes = await getCompanyUsers(id);
       if (usersRes.success && usersRes.data) {
@@ -401,7 +401,7 @@ export function CompanyDetail() {
         onClose={() => {
           setIsAddUserModalOpen(false);
           setSelectedUserId('');
-          setSelectedRole('member');
+          setSelectedRole('MEMBER');
           setAddUserError('');
         }}
         title="Add User to Company"
@@ -419,12 +419,12 @@ export function CompanyDetail() {
           <Select
             label="Role"
             options={[
-              { value: 'admin', label: 'Admin' },
-              { value: 'member', label: 'Member' },
-              { value: 'viewer', label: 'Viewer' },
+              { value: 'ADMIN', label: 'Admin' },
+              { value: 'MEMBER', label: 'Member' },
+              { value: 'READ_ONLY', label: 'Read Only' },
             ]}
             value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value as 'admin' | 'member' | 'viewer')}
+            onChange={(e) => setSelectedRole(e.target.value as 'ADMIN' | 'MEMBER' | 'READ_ONLY')}
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button

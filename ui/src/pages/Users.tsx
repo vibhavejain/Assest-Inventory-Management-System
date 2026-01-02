@@ -9,8 +9,8 @@ import {
   Input,
   Select,
 } from '../components/ui';
-import { getUsers, createUser } from '../api';
-import type { User, CreateUserRequest } from '../types';
+import { getUsers, createUser, getCompanies, addUserToCompany } from '../api';
+import type { User, CreateUserRequest, Company, AccessRole } from '../types';
 
 export function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -19,6 +19,11 @@ export function Users() {
   const [formData, setFormData] = useState<CreateUserRequest>({ email: '', name: '' });
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  
+  // For company/role assignment
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [selectedRole, setSelectedRole] = useState<AccessRole>('MEMBER');
 
   async function fetchUsers() {
     setLoading(true);
@@ -31,7 +36,15 @@ export function Users() {
 
   useEffect(() => {
     fetchUsers();
+    fetchCompanies();
   }, []);
+
+  async function fetchCompanies() {
+    const res = await getCompanies({ limit: 100 });
+    if (res.success && res.data) {
+      setCompanies(res.data);
+    }
+  }
 
   async function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
@@ -45,8 +58,17 @@ export function Users() {
 
     const res = await createUser(formData);
     if (res.success && res.data) {
+      // If a company was selected, add user to that company with the selected role
+      if (selectedCompanyId) {
+        await addUserToCompany(selectedCompanyId, {
+          user_id: res.data.id,
+          role: selectedRole,
+        });
+      }
       setIsModalOpen(false);
       setFormData({ email: '', name: '' });
+      setSelectedCompanyId('');
+      setSelectedRole('MEMBER');
       fetchUsers();
     } else {
       setFormError(res.error?.message || 'Failed to create user');
@@ -133,6 +155,8 @@ export function Users() {
         onClose={() => {
           setIsModalOpen(false);
           setFormData({ email: '', name: '' });
+          setSelectedCompanyId('');
+          setSelectedRole('MEMBER');
           setFormError('');
         }}
         title="Create User"
@@ -162,9 +186,31 @@ export function Users() {
             ]}
             value={formData.status || 'active'}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value as any })
+              setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })
             }
           />
+          <Select
+            label="Assign to Company (Optional)"
+            placeholder="Select a company"
+            options={[
+              { value: '', label: 'No company' },
+              ...companies.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+            value={selectedCompanyId}
+            onChange={(e) => setSelectedCompanyId(e.target.value)}
+          />
+          {selectedCompanyId && (
+            <Select
+              label="Role"
+              options={[
+                { value: 'ADMIN', label: 'Admin' },
+                { value: 'MEMBER', label: 'Member' },
+                { value: 'READ_ONLY', label: 'Read Only' },
+              ]}
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value as AccessRole)}
+            />
+          )}
           <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
