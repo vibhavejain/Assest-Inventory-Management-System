@@ -1,5 +1,5 @@
 {
-	"name": "asset-inventory-management-system",
+	"name": "assest-inventory-management-system",
 	"compatibility_date": "2026-01-02",
 	"main": "src/index.ts",
 	// D1 Database binding
