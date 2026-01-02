@@ -25,6 +25,7 @@ import {
   getUserByEmail,
   getAllUsers,
   updateUser,
+  deleteUser,
 } from '../db/users';
 import { companyExists } from '../db/companies';
 
@@ -50,13 +51,17 @@ export async function handleUsersRoutes(
   }
 
   // PATCH /users/:id - Update user
+  // DELETE /users/:id - Delete user
   if (pathParts.length === 2 && pathParts[0] === 'users') {
     const userId = pathParts[1];
 
     if (method === 'PATCH') {
       return handleUpdateUser(userId, request, env, ctx);
     }
-    return methodNotAllowedResponse(['PATCH']);
+    if (method === 'DELETE') {
+      return handleDeleteUser(userId, env, ctx);
+    }
+    return methodNotAllowedResponse(['PATCH', 'DELETE']);
   }
 
   return notFoundResponse('Route');
@@ -116,6 +121,32 @@ async function handleCreateUser(
   } catch (error) {
     console.error('Error creating user:', error);
     return internalErrorResponse('Failed to create user');
+  }
+}
+
+async function handleDeleteUser(
+  userId: string,
+  env: Env,
+  ctx: RequestContext
+): Promise<Response> {
+  try {
+    const idValidation = validateUUID(userId, 'id');
+    if (!idValidation.valid) {
+      return validationErrorResponse(idValidation.errors);
+    }
+
+    const result = await deleteUser(env.DB, userId, ctx.userId);
+    if (!result.success) {
+      if (result.error === 'User not found') {
+        return notFoundResponse('User');
+      }
+      return badRequestResponse(result.error || 'Failed to delete user');
+    }
+
+    return jsonResponse({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return internalErrorResponse('Failed to delete user');
   }
 }
 

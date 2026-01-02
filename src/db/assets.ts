@@ -208,3 +208,41 @@ export async function assetExists(db: D1Database, id: string): Promise<boolean> 
 
   return result !== null;
 }
+
+export async function deleteAsset(
+  db: D1Database,
+  id: string,
+  userId?: string
+): Promise<{ success: boolean; error?: string }> {
+  const existing = await getAssetById(db, id);
+  if (!existing) {
+    return { success: false, error: 'Asset not found' };
+  }
+
+  // Check if asset has any audit logs beyond creation
+  const auditCount = await db
+    .prepare(
+      `SELECT COUNT(*) as count FROM audit_logs 
+       WHERE entity_type = 'asset' AND entity_id = ? AND action != 'create'`
+    )
+    .bind(id)
+    .first<{ count: number }>();
+
+  if (auditCount && auditCount.count > 0) {
+    return { success: false, error: 'Cannot delete asset with activity history' };
+  }
+
+  // Delete audit logs for this asset
+  await db
+    .prepare(`DELETE FROM audit_logs WHERE entity_type = 'asset' AND entity_id = ?`)
+    .bind(id)
+    .run();
+
+  // Delete the asset
+  await db
+    .prepare(`DELETE FROM assets WHERE id = ?`)
+    .bind(id)
+    .run();
+
+  return { success: true };
+}

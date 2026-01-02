@@ -24,6 +24,7 @@ import {
   getAssetById,
   getAllAssets,
   updateAsset,
+  deleteAsset,
 } from '../db/assets';
 import { companyExists } from '../db/companies';
 
@@ -49,13 +50,17 @@ export async function handleAssetsRoutes(
   }
 
   // PATCH /assets/:id - Update asset
+  // DELETE /assets/:id - Delete asset
   if (pathParts.length === 2 && pathParts[0] === 'assets') {
     const assetId = pathParts[1];
 
     if (method === 'PATCH') {
       return handleUpdateAsset(assetId, request, env, ctx);
     }
-    return methodNotAllowedResponse(['PATCH']);
+    if (method === 'DELETE') {
+      return handleDeleteAsset(assetId, env, ctx);
+    }
+    return methodNotAllowedResponse(['PATCH', 'DELETE']);
   }
 
   return notFoundResponse('Route');
@@ -115,6 +120,32 @@ async function handleCreateAsset(
   } catch (error) {
     console.error('Error creating asset:', error);
     return internalErrorResponse('Failed to create asset');
+  }
+}
+
+async function handleDeleteAsset(
+  assetId: string,
+  env: Env,
+  ctx: RequestContext
+): Promise<Response> {
+  try {
+    const idValidation = validateUUID(assetId, 'id');
+    if (!idValidation.valid) {
+      return validationErrorResponse(idValidation.errors);
+    }
+
+    const result = await deleteAsset(env.DB, assetId, ctx.userId);
+    if (!result.success) {
+      if (result.error === 'Asset not found') {
+        return notFoundResponse('Asset');
+      }
+      return badRequestResponse(result.error || 'Failed to delete asset');
+    }
+
+    return jsonResponse({ success: true, message: 'Asset deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting asset:', error);
+    return internalErrorResponse('Failed to delete asset');
   }
 }
 

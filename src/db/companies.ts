@@ -160,3 +160,53 @@ export async function companyExists(db: D1Database, id: string): Promise<boolean
 
   return result !== null;
 }
+
+export async function deleteCompany(
+  db: D1Database,
+  id: string,
+  userId?: string
+): Promise<{ success: boolean; error?: string }> {
+  const existing = await getCompanyById(db, id);
+  if (!existing) {
+    return { success: false, error: 'Company not found' };
+  }
+
+  // Check if company has any audit logs beyond creation
+  const auditCount = await db
+    .prepare(
+      `SELECT COUNT(*) as count FROM audit_logs 
+       WHERE company_id = ? AND action != 'create'`
+    )
+    .bind(id)
+    .first<{ count: number }>();
+
+  if (auditCount && auditCount.count > 0) {
+    return { success: false, error: 'Cannot delete company with activity history' };
+  }
+
+  // Delete company access records
+  await db
+    .prepare(`DELETE FROM company_access WHERE company_id = ?`)
+    .bind(id)
+    .run();
+
+  // Delete assets for this company
+  await db
+    .prepare(`DELETE FROM assets WHERE company_id = ?`)
+    .bind(id)
+    .run();
+
+  // Delete audit logs for this company
+  await db
+    .prepare(`DELETE FROM audit_logs WHERE company_id = ?`)
+    .bind(id)
+    .run();
+
+  // Delete the company
+  await db
+    .prepare(`DELETE FROM companies WHERE id = ?`)
+    .bind(id)
+    .run();
+
+  return { success: true };
+}

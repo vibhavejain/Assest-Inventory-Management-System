@@ -25,6 +25,7 @@ import {
   getCompanyByName,
   getAllCompanies,
   updateCompany,
+  deleteCompany,
 } from '../db/companies';
 
 export async function handleCompaniesRoutes(
@@ -50,6 +51,7 @@ export async function handleCompaniesRoutes(
 
   // GET /companies/:id - Get company by ID
   // PATCH /companies/:id - Update company
+  // DELETE /companies/:id - Delete company
   if (pathParts.length === 2 && pathParts[0] === 'companies') {
     const companyId = pathParts[1];
 
@@ -59,7 +61,10 @@ export async function handleCompaniesRoutes(
     if (method === 'PATCH') {
       return handleUpdateCompany(companyId, request, env, ctx);
     }
-    return methodNotAllowedResponse(['GET', 'PATCH']);
+    if (method === 'DELETE') {
+      return handleDeleteCompany(companyId, env, ctx);
+    }
+    return methodNotAllowedResponse(['GET', 'PATCH', 'DELETE']);
   }
 
   return notFoundResponse('Route');
@@ -130,6 +135,32 @@ async function handleGetCompany(companyId: string, env: Env): Promise<Response> 
   } catch (error) {
     console.error('Error getting company:', error);
     return internalErrorResponse('Failed to get company');
+  }
+}
+
+async function handleDeleteCompany(
+  companyId: string,
+  env: Env,
+  ctx: RequestContext
+): Promise<Response> {
+  try {
+    const idValidation = validateUUID(companyId, 'id');
+    if (!idValidation.valid) {
+      return validationErrorResponse(idValidation.errors);
+    }
+
+    const result = await deleteCompany(env.DB, companyId, ctx.userId);
+    if (!result.success) {
+      if (result.error === 'Company not found') {
+        return notFoundResponse('Company');
+      }
+      return badRequestResponse(result.error || 'Failed to delete company');
+    }
+
+    return jsonResponse({ success: true, message: 'Company deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting company:', error);
+    return internalErrorResponse('Failed to delete company');
   }
 }
 

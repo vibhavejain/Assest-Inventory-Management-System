@@ -196,3 +196,47 @@ export async function userExists(db: D1Database, id: string): Promise<boolean> {
 
   return result !== null;
 }
+
+export async function deleteUser(
+  db: D1Database,
+  id: string,
+  actingUserId?: string
+): Promise<{ success: boolean; error?: string }> {
+  const existing = await getUserById(db, id);
+  if (!existing) {
+    return { success: false, error: 'User not found' };
+  }
+
+  // Check if user has any audit logs beyond creation
+  const auditCount = await db
+    .prepare(
+      `SELECT COUNT(*) as count FROM audit_logs 
+       WHERE entity_type = 'user' AND entity_id = ? AND action != 'create'`
+    )
+    .bind(id)
+    .first<{ count: number }>();
+
+  if (auditCount && auditCount.count > 0) {
+    return { success: false, error: 'Cannot delete user with activity history' };
+  }
+
+  // Delete company access records
+  await db
+    .prepare(`DELETE FROM company_access WHERE user_id = ?`)
+    .bind(id)
+    .run();
+
+  // Delete audit logs for this user
+  await db
+    .prepare(`DELETE FROM audit_logs WHERE entity_type = 'user' AND entity_id = ?`)
+    .bind(id)
+    .run();
+
+  // Delete the user
+  await db
+    .prepare(`DELETE FROM users WHERE id = ?`)
+    .bind(id)
+    .run();
+
+  return { success: true };
+}
