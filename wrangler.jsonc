@@ -1,5 +1,34 @@
 {
-  "name": "asset-inventory-management-system",
-  "compatibility_date": "2026-01-02",
-  "main": "src/index.ts"
+	"name": "asset-inventory-management-system",
+	"compatibility_date": "2026-01-02",
+	"main": "src/index.ts",
+	// D1 Database binding
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "asset-inventory-db",
+			"database_id": "6aef35cb-f9bd-43cd-8dfa-f10c8f0aa62f"
+		}
+	],
+	// Environment-specific configuration
+	"env": {
+		"production": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "asset-inventory-db-prod",
+					"database_id": "<CREATE_PROD_DB_AND_ADD_ID_HERE>"
+				}
+			]
+		},
+		"staging": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "asset-inventory-db-staging",
+					"database_id": "<CREATE_STAGING_DB_AND_ADD_ID_HERE>"
+				}
+			]
+		}
+	}
 }
