@@ -61,26 +61,34 @@ export function Users() {
     setSubmitting(true);
     setFormError('');
 
-    const res = await createUser(formData);
-    if (res.success && res.data) {
-      // If a company was selected, add user to that company with the selected role
-      if (selectedCompanyId) {
-        const accessRes = await addUserToCompany(selectedCompanyId, {
-          user_id: res.data.id,
-          role: selectedRole,
-        });
-        if (!accessRes.success) {
-          // User created but company assignment failed - still close modal and refresh
-          console.warn('User created but company assignment failed:', accessRes.error?.message);
+    try {
+      const res = await createUser(formData);
+      if (res.success && res.data) {
+        // If a company was selected, add user to that company with the selected role
+        if (selectedCompanyId) {
+          try {
+            const accessRes = await addUserToCompany(selectedCompanyId, {
+              user_id: res.data.id,
+              role: selectedRole,
+            });
+            if (!accessRes.success) {
+              console.warn('User created but company assignment failed:', accessRes.error?.message);
+            }
+          } catch (accessError) {
+            console.warn('User created but company assignment threw error:', accessError);
+          }
         }
+        setIsModalOpen(false);
+        setFormData({ email: '', name: '' });
+        setSelectedCompanyId('');
+        setSelectedRole('MEMBER');
+        fetchUsers();
+      } else {
+        setFormError(res.error?.message || 'Failed to create user');
       }
-      setIsModalOpen(false);
-      setFormData({ email: '', name: '' });
-      setSelectedCompanyId('');
-      setSelectedRole('MEMBER');
-      fetchUsers();
-    } else {
-      setFormError(res.error?.message || 'Failed to create user');
+    } catch (error) {
+      console.error('Create user error:', error);
+      setFormError('Failed to create user');
     }
     setSubmitting(false);
   }

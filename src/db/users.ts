@@ -38,15 +38,18 @@ export async function createUser(
     created_at: createdAt,
   };
 
-  const companyId = data.primary_company_id || id;
-  await createAuditLog(db, {
-    companyId,
-    userId: actingUserId,
-    entityType: 'user',
-    entityId: id,
-    action: 'create',
-    changes: { created: user },
-  });
+  // Only create audit log if user has a primary company
+  // Users without a company can't have audit logs (no valid company_id)
+  if (data.primary_company_id) {
+    await createAuditLog(db, {
+      companyId: data.primary_company_id,
+      userId: actingUserId,
+      entityType: 'user',
+      entityId: id,
+      action: 'create',
+      changes: { created: user },
+    });
+  }
 
   return user;
 }
@@ -173,10 +176,9 @@ export async function updateUser(
 
   const updated = await getUserById(db, id);
 
-  if (updated) {
-    const companyId = updated.primary_company_id || id;
+  if (updated && updated.primary_company_id) {
     await createAuditLog(db, {
-      companyId,
+      companyId: updated.primary_company_id,
       userId: actingUserId,
       entityType: 'user',
       entityId: id,
