@@ -20,7 +20,7 @@ import type {
 } from '../types';
 
 // Base URL for the API - change this to your deployed backend URL
-const API_BASE_URL = 'https://asset-inventory-management-system.vibhave.workers.dev';
+const API_BASE_URL = 'https://assest-inventory-management-system.vibhave.workers.dev';
 
 // Generic fetch wrapper with error handling
 async function apiFetch<T>(
