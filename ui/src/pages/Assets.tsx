@@ -220,6 +220,7 @@ export function Assets() {
           <div className="grid grid-cols-2 gap-4">
             <Select
               label="Type"
+              placeholder="Select type"
               options={typeOptions}
               value={formData.type || ''}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as AssetType })}
