@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Plus, Package, Filter, Trash2 } from 'lucide-react';
+import { Plus, Package, Filter } from 'lucide-react';
 import {
   Card,
   Button,
-  Table,
-  Badge,
-  getStatusVariant,
   Modal,
   Input,
   Select,
 } from '../components/ui';
+import { AssetCard } from '../components/AssetCard';
 import { getAssets, getCompanies, createAsset, deleteAsset } from '../api';
 import type { Asset, Company, CreateAssetRequest, AssetType, AssetStatus } from '../types';
 
@@ -110,68 +108,6 @@ export function Assets() {
     setDeleting(false);
   }
 
-  const columns = [
-    {
-      key: 'name',
-      header: 'Asset',
-      render: (asset: Asset) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-surface-muted rounded-lg flex items-center justify-center">
-            <Package size={16} className="text-text-secondary" />
-          </div>
-          <div>
-            <p className="font-medium text-text-primary">{asset.name}</p>
-            <p className="text-xs text-text-secondary">
-              {asset.identifier || 'No identifier'}
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'type',
-      header: 'Type',
-      render: (asset: Asset) => (
-        <Badge>{asset.type}</Badge>
-      ),
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (asset: Asset) => (
-        <Badge variant={getStatusVariant(asset.status)}>
-          {asset.status}
-        </Badge>
-      ),
-    },
-    {
-      key: 'created_at',
-      header: 'Created',
-      render: (asset: Asset) => (
-        <span className="text-text-secondary">
-          {new Date(asset.created_at).toLocaleDateString()}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '',
-      render: (asset: Asset) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setAssetToDelete(asset);
-            setDeleteConfirmOpen(true);
-          }}
-          className="p-2 text-text-secondary hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-          title="Delete asset"
-        >
-          <Trash2 size={16} />
-        </button>
-      ),
-    },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -219,26 +155,41 @@ export function Assets() {
         </div>
       </Card>
 
-      {/* Assets Table */}
-      <Table
-        columns={columns}
-        data={assets}
-        keyExtractor={(asset) => asset.id}
-        loading={loading}
-        emptyState={{
-          icon: <Package size={48} />,
-          title: 'No assets found',
-          description: filterType || filterStatus || filterCompany
-            ? 'Try adjusting your filters'
-            : 'Create your first asset to get started',
-          action: !filterType && !filterStatus && !filterCompany ? (
+      {/* Assets List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : assets.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <Package size={48} className="text-text-secondary mb-4" />
+          <h3 className="text-lg font-medium text-text-primary">No assets found</h3>
+          <p className="text-text-secondary mt-1 mb-4">
+            {filterType || filterStatus || filterCompany
+              ? 'Try adjusting your filters'
+              : 'Create your first asset to get started'}
+          </p>
+          {!filterType && !filterStatus && !filterCompany && (
             <Button onClick={() => setIsModalOpen(true)}>
               <Plus size={18} />
               Add Asset
             </Button>
-          ) : undefined,
-        }}
-      />
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {assets.map((asset) => (
+            <AssetCard
+              key={asset.id}
+              asset={asset}
+              onDelete={(a) => {
+                setAssetToDelete(a);
+                setDeleteConfirmOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Create Asset Modal */}
       <Modal

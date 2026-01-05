@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Plus, Users as UsersIcon, Trash2 } from 'lucide-react';
+import { Plus, Users as UsersIcon } from 'lucide-react';
 import {
   Button,
-  Table,
-  Badge,
-  getStatusVariant,
   Modal,
   Input,
   Select,
 } from '../components/ui';
+import { UserCard } from '../components/UserCard';
 import { getUsers, createUser, getCompanies, addUserToCompany, deleteUser } from '../api';
 import type { User, CreateUserRequest, Company, AccessRole } from '../types';
 
@@ -107,61 +105,6 @@ export function Users() {
     setDeleting(false);
   }
 
-  const columns = [
-    {
-      key: 'name',
-      header: 'User',
-      render: (user: User) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-            <span className="text-sm font-medium text-primary">
-              {user.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <p className="font-medium text-text-primary">{user.name}</p>
-            <p className="text-xs text-text-secondary">{user.email}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (user: User) => (
-        <Badge variant={getStatusVariant(user.status)}>
-          {user.status}
-        </Badge>
-      ),
-    },
-    {
-      key: 'created_at',
-      header: 'Created',
-      render: (user: User) => (
-        <span className="text-text-secondary">
-          {new Date(user.created_at).toLocaleDateString()}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '',
-      render: (user: User) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setUserToDelete(user);
-            setDeleteConfirmOpen(true);
-          }}
-          className="p-2 text-text-secondary hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-          title="Delete user"
-        >
-          <Trash2 size={16} />
-        </button>
-      ),
-    },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -178,24 +121,35 @@ export function Users() {
         </Button>
       </div>
 
-      {/* Users Table */}
-      <Table
-        columns={columns}
-        data={users}
-        keyExtractor={(user) => user.id}
-        loading={loading}
-        emptyState={{
-          icon: <UsersIcon size={48} />,
-          title: 'No users yet',
-          description: 'Create your first user to get started',
-          action: (
-            <Button onClick={() => setIsModalOpen(true)}>
-              <Plus size={18} />
-              Add User
-            </Button>
-          ),
-        }}
-      />
+      {/* Users List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <UsersIcon size={48} className="text-text-secondary mb-4" />
+          <h3 className="text-lg font-medium text-text-primary">No users yet</h3>
+          <p className="text-text-secondary mt-1 mb-4">Create your first user to get started</p>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus size={18} />
+            Add User
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {users.map((user) => (
+            <UserCard
+              key={user.id}
+              user={user}
+              onDelete={(u) => {
+                setUserToDelete(u);
+                setDeleteConfirmOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Create User Modal */}
       <Modal

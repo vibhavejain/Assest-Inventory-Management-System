@@ -7,3 +7,4 @@ export { Loading, LoadingPage, LoadingSkeleton } from './Loading';
 export { EmptyState } from './EmptyState';
 export { Modal, ConfirmModal } from './Modal';
 export { Table, Pagination } from './Table';
+export { ExpandableCard, ActivityItem } from './ExpandableCard';

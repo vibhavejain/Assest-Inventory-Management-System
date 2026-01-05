@@ -129,6 +129,19 @@ export async function deleteUser(id: string) {
   });
 }
 
+export async function getUserCompanies(userId: string) {
+  return apiFetch<CompanyAccess[]>(`/users/${userId}/companies`);
+}
+
+export async function getUserAuditLogs(userId: string, params?: { limit?: number; offset?: number }) {
+  const searchParams = new URLSearchParams();
+  if (params?.limit) searchParams.set('limit', params.limit.toString());
+  if (params?.offset) searchParams.set('offset', params.offset.toString());
+  
+  const query = searchParams.toString();
+  return apiFetch<AuditLog[]>(`/users/${userId}/audit-logs${query ? `?${query}` : ''}`);
+}
+
 // ============================================================================
 // Company Access API
 // ============================================================================

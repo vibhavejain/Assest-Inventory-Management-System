@@ -5,6 +5,18 @@
 import type { CompanyAccess, AddUserToCompanyRequest, AccessRole } from '../types';
 import { createAuditLog } from './audit';
 
+// Map lowercase DB roles to uppercase API roles
+const ROLE_MAP: Record<string, AccessRole> = {
+  owner: 'OWNER',
+  admin: 'ADMIN',
+  member: 'MEMBER',
+  viewer: 'READ_ONLY',
+};
+
+function normalizeRole(dbRole: string): AccessRole {
+  return ROLE_MAP[dbRole.toLowerCase()] || 'MEMBER';
+}
+
 export async function addUserToCompany(
   db: D1Database,
   companyId: string,
@@ -13,21 +25,23 @@ export async function addUserToCompany(
 ): Promise<CompanyAccess> {
   const id = crypto.randomUUID();
   const createdAt = new Date().toISOString();
-  const role = data.role || 'member';
+  // Convert uppercase role to lowercase for database storage (DB constraint uses lowercase)
+  const roleInput = data.role || 'MEMBER';
+  const dbRole = roleInput.toLowerCase();
 
   await db
     .prepare(
       `INSERT INTO company_access (id, user_id, company_id, role, created_at)
        VALUES (?, ?, ?, ?, ?)`
     )
-    .bind(id, data.user_id, companyId, role, createdAt)
+    .bind(id, data.user_id, companyId, dbRole, createdAt)
     .run();
 
   const access: CompanyAccess = {
     id,
     user_id: data.user_id,
     company_id: companyId,
-    role,
+    role: roleInput,
     created_at: createdAt,
   };
 
@@ -81,9 +95,10 @@ export async function getCompanyAccess(
       `SELECT * FROM company_access WHERE company_id = ? AND user_id = ?`
     )
     .bind(companyId, userId)
-    .first<CompanyAccess>();
+    .first<CompanyAccess & { role: string }>();
 
-  return result || null;
+  if (!result) return null;
+  return { ...result, role: normalizeRole(result.role) };
 }
 
 export async function getCompanyAccessById(
@@ -93,9 +108,10 @@ export async function getCompanyAccessById(
   const result = await db
     .prepare(`SELECT * FROM company_access WHERE id = ?`)
     .bind(id)
-    .first<CompanyAccess>();
+    .first<CompanyAccess & { role: string }>();
 
-  return result || null;
+  if (!result) return null;
+  return { ...result, role: normalizeRole(result.role) };
 }
 
 export async function getUserCompanies(
@@ -105,9 +121,9 @@ export async function getUserCompanies(
   const result = await db
     .prepare(`SELECT * FROM company_access WHERE user_id = ? ORDER BY created_at DESC`)
     .bind(userId)
-    .all<CompanyAccess>();
+    .all<CompanyAccess & { role: string }>();
 
-  return result.results || [];
+  return (result.results || []).map((row) => ({ ...row, role: normalizeRole(row.role) }));
 }
 
 export async function getCompanyUsers(
@@ -122,7 +138,8 @@ export async function getCompanyUsers(
 
   if (role) {
     whereClause += ' AND role = ?';
-    params.push(role);
+    // Convert uppercase API role to lowercase for DB query
+    params.push(role.toLowerCase());
   }
 
   const countResult = await db
@@ -137,10 +154,16 @@ export async function getCompanyUsers(
       `SELECT * FROM company_access ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`
     )
     .bind(...params, limit, offset)
-    .all<CompanyAccess>();
+    .all<CompanyAccess & { role: string }>();
+
+  // Normalize roles from lowercase DB format to uppercase API format
+  const access = (accessResult.results || []).map((row) => ({
+    ...row,
+    role: normalizeRole(row.role),
+  }));
 
   return {
-    access: accessResult.results || [],
+    access,
     total,
   };
 }

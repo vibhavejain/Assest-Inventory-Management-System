@@ -1,20 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Building2, Trash2 } from 'lucide-react';
+import { Plus, Building2 } from 'lucide-react';
 import {
   Button,
-  Table,
-  Badge,
-  getStatusVariant,
   Modal,
   Input,
   Select,
 } from '../components/ui';
+import { CompanyCard } from '../components/CompanyCard';
 import { getCompanies, createCompany, deleteCompany } from '../api';
 import type { Company, CreateCompanyRequest } from '../types';
 
 export function Companies() {
-  const navigate = useNavigate();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [_total, setTotal] = useState(0);
@@ -77,56 +73,6 @@ export function Companies() {
     setDeleting(false);
   }
 
-  const columns = [
-    {
-      key: 'name',
-      header: 'Company Name',
-      render: (company: Company) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-surface-muted rounded-lg flex items-center justify-center">
-            <Building2 size={16} className="text-text-secondary" />
-          </div>
-          <span className="font-medium">{company.name}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (company: Company) => (
-        <Badge variant={getStatusVariant(company.status)}>
-          {company.status}
-        </Badge>
-      ),
-    },
-    {
-      key: 'created_at',
-      header: 'Created',
-      render: (company: Company) => (
-        <span className="text-text-secondary">
-          {new Date(company.created_at).toLocaleDateString()}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '',
-      render: (company: Company) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setCompanyToDelete(company);
-            setDeleteConfirmOpen(true);
-          }}
-          className="p-2 text-text-secondary hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-          title="Delete company"
-        >
-          <Trash2 size={16} />
-        </button>
-      ),
-    },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -143,25 +89,35 @@ export function Companies() {
         </Button>
       </div>
 
-      {/* Companies Table */}
-      <Table
-        columns={columns}
-        data={companies}
-        keyExtractor={(company) => company.id}
-        loading={loading}
-        onRowClick={(company) => navigate(`/companies/${company.id}`)}
-        emptyState={{
-          icon: <Building2 size={48} />,
-          title: 'No companies yet',
-          description: 'Create your first company to get started',
-          action: (
-            <Button onClick={() => setIsModalOpen(true)}>
-              <Plus size={18} />
-              Add Company
-            </Button>
-          ),
-        }}
-      />
+      {/* Companies List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : companies.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <Building2 size={48} className="text-text-secondary mb-4" />
+          <h3 className="text-lg font-medium text-text-primary">No companies yet</h3>
+          <p className="text-text-secondary mt-1 mb-4">Create your first company to get started</p>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus size={18} />
+            Add Company
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {companies.map((company) => (
+            <CompanyCard
+              key={company.id}
+              company={company}
+              onDelete={(c) => {
+                setCompanyToDelete(c);
+                setDeleteConfirmOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Create Company Modal */}
       <Modal

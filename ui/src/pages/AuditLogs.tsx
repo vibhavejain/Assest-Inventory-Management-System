@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react';
 import { FileText, Filter, AlertCircle } from 'lucide-react';
 import {
   Card,
-  Table,
-  Badge,
   Select,
   EmptyState,
 } from '../components/ui';
+import { AuditLogCard } from '../components/AuditLogCard';
 import { getAuditLogs, getCompanies } from '../api';
 import type { AuditLog, Company } from '../types';
 
@@ -64,70 +63,6 @@ export function AuditLogs() {
     { value: 'create', label: 'Create' },
     { value: 'update', label: 'Update' },
     { value: 'delete', label: 'Delete' },
-  ];
-
-  const getActionVariant = (action: string) => {
-    switch (action) {
-      case 'create':
-        return 'success';
-      case 'update':
-        return 'warning';
-      case 'delete':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  const columns = [
-    {
-      key: 'created_at',
-      header: 'Time',
-      render: (log: AuditLog) => (
-        <div>
-          <p className="text-text-primary">
-            {new Date(log.created_at).toLocaleDateString()}
-          </p>
-          <p className="text-xs text-text-secondary">
-            {new Date(log.created_at).toLocaleTimeString()}
-          </p>
-        </div>
-      ),
-    },
-    {
-      key: 'action',
-      header: 'Action',
-      render: (log: AuditLog) => (
-        <Badge variant={getActionVariant(log.action) as any}>
-          {log.action}
-        </Badge>
-      ),
-    },
-    {
-      key: 'entity_type',
-      header: 'Entity',
-      render: (log: AuditLog) => (
-        <span className="capitalize">{log.entity_type.replace('_', ' ')}</span>
-      ),
-    },
-    {
-      key: 'entity_id',
-      header: 'Entity ID',
-      render: (log: AuditLog) => (
-        <code className="text-xs bg-surface-muted px-2 py-1 rounded">
-          {log.entity_id.slice(0, 8)}...
-        </code>
-      ),
-    },
-    {
-      key: 'user_id',
-      header: 'User',
-      render: (log: AuditLog) => (
-        <span className="text-text-secondary">
-          {log.user_id ? `${log.user_id.slice(0, 8)}...` : 'System'}
-        </span>
-      ),
-    },
   ];
 
   if (companies.length === 0 && !loading) {
@@ -188,18 +123,26 @@ export function AuditLogs() {
         </div>
       </Card>
 
-      {/* Audit Logs Table */}
-      <Table
-        columns={columns}
-        data={logs}
-        keyExtractor={(log) => log.id}
-        loading={loading}
-        emptyState={{
-          icon: <FileText size={48} />,
-          title: 'No audit logs found',
-          description: 'Activity will appear here as changes are made',
-        }}
-      />
+      {/* Audit Logs List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : logs.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={<FileText size={48} />}
+            title="No audit logs found"
+            description="Activity will appear here as changes are made"
+          />
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {logs.map((log) => (
+            <AuditLogCard key={log.id} log={log} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

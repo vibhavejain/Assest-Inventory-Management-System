@@ -26,8 +26,11 @@ import {
   getAllUsers,
   updateUser,
   deleteUser,
+  userExists,
 } from '../db/users';
 import { companyExists } from '../db/companies';
+import { getUserCompanies } from '../db/company-access';
+import { getAuditLogsByEntity } from '../db/audit';
 
 export async function handleUsersRoutes(
   request: Request,
@@ -62,6 +65,24 @@ export async function handleUsersRoutes(
       return handleDeleteUser(userId, env, ctx);
     }
     return methodNotAllowedResponse(['PATCH', 'DELETE']);
+  }
+
+  // GET /users/:id/companies - Get user's company assignments
+  if (pathParts.length === 3 && pathParts[0] === 'users' && pathParts[2] === 'companies') {
+    const userId = pathParts[1];
+    if (method === 'GET') {
+      return handleGetUserCompanies(userId, env);
+    }
+    return methodNotAllowedResponse(['GET']);
+  }
+
+  // GET /users/:id/audit-logs - Get user's audit logs
+  if (pathParts.length === 3 && pathParts[0] === 'users' && pathParts[2] === 'audit-logs') {
+    const userId = pathParts[1];
+    if (method === 'GET') {
+      return handleGetUserAuditLogs(userId, url, env);
+    }
+    return methodNotAllowedResponse(['GET']);
   }
 
   return notFoundResponse('Route');
@@ -199,5 +220,48 @@ async function handleUpdateUser(
   } catch (error) {
     console.error('Error updating user:', error);
     return internalErrorResponse('Failed to update user');
+  }
+}
+
+async function handleGetUserCompanies(userId: string, env: Env): Promise<Response> {
+  try {
+    const idValidation = validateUUID(userId, 'id');
+    if (!idValidation.valid) {
+      return validationErrorResponse(idValidation.errors);
+    }
+
+    const exists = await userExists(env.DB, userId);
+    if (!exists) {
+      return notFoundResponse('User');
+    }
+
+    const companies = await getUserCompanies(env.DB, userId);
+    return jsonResponse(companies);
+  } catch (error) {
+    console.error('Error getting user companies:', error);
+    return internalErrorResponse('Failed to get user companies');
+  }
+}
+
+async function handleGetUserAuditLogs(userId: string, url: URL, env: Env): Promise<Response> {
+  try {
+    const idValidation = validateUUID(userId, 'id');
+    if (!idValidation.valid) {
+      return validationErrorResponse(idValidation.errors);
+    }
+
+    const exists = await userExists(env.DB, userId);
+    if (!exists) {
+      return notFoundResponse('User');
+    }
+
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100);
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    const { logs, total } = await getAuditLogsByEntity(env.DB, 'user', userId, { limit, offset });
+    return jsonResponse(logs, 200, { total, limit, page: Math.floor(offset / limit) + 1 });
+  } catch (error) {
+    console.error('Error getting user audit logs:', error);
+    return internalErrorResponse('Failed to get user audit logs');
   }
 }
