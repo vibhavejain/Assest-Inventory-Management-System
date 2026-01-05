@@ -8,12 +8,13 @@ import {
   Select,
 } from '../components/ui';
 import { AssetCard } from '../components/AssetCard';
-import { getAssets, getCompanies, createAsset, deleteAsset } from '../api';
-import type { Asset, Company, CreateAssetRequest, AssetType, AssetStatus } from '../types';
+import { getAssets, getCompanies, getUsers, createAsset, deleteAsset } from '../api';
+import type { Asset, Company, User, CreateAssetRequest, AssetType, AssetStatus } from '../types';
 
 export function Assets() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<CreateAssetRequest>>({});
@@ -51,8 +52,16 @@ export function Assets() {
     }
   }
 
+  async function fetchUsers() {
+    const res = await getUsers({ limit: 100 });
+    if (res.success && res.data) {
+      setUsers(res.data);
+    }
+  }
+
   useEffect(() => {
     fetchCompanies();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -186,6 +195,9 @@ export function Assets() {
                 setAssetToDelete(a);
                 setDeleteConfirmOpen(true);
               }}
+              onUpdate={(updatedAsset) => {
+                setAssets(assets.map((a) => a.id === updatedAsset.id ? updatedAsset : a));
+              }}
             />
           ))}
         </div>
@@ -237,6 +249,16 @@ export function Assets() {
             placeholder="Serial number, license key, etc."
             value={formData.identifier || ''}
             onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
+          />
+          <Select
+            label="Assign to User (Optional)"
+            placeholder="Select user"
+            options={[
+              { value: '', label: 'Unassigned' },
+              ...users.map((u) => ({ value: u.id, label: `${u.name} (${u.email})` })),
+            ]}
+            value={formData.assigned_to || ''}
+            onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value || undefined })}
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button

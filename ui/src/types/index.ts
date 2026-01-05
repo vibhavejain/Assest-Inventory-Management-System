@@ -44,6 +44,7 @@ export interface Asset {
   identifier: string | null;
   status: AssetStatus;
   metadata: Record<string, unknown>;
+  assigned_to: string | null;
   created_at: string;
 }
 
@@ -111,6 +112,7 @@ export interface CreateAssetRequest {
   identifier?: string;
   status?: AssetStatus;
   metadata?: Record<string, unknown>;
+  assigned_to?: string;
 }
 
 export interface UpdateAssetRequest {
@@ -119,4 +121,5 @@ export interface UpdateAssetRequest {
   identifier?: string | null;
   status?: AssetStatus;
   metadata?: Record<string, unknown>;
+  assigned_to?: string | null;
 }

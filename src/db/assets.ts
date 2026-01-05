@@ -17,8 +17,8 @@ export async function createAsset(
 
   await db
     .prepare(
-      `INSERT INTO assets (id, company_id, type, name, identifier, status, metadata, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO assets (id, company_id, type, name, identifier, status, metadata, assigned_to, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       id,
@@ -28,6 +28,7 @@ export async function createAsset(
       data.identifier || null,
       status,
       metadataJson,
+      data.assigned_to || null,
       createdAt
     )
     .run();
@@ -40,6 +41,7 @@ export async function createAsset(
     identifier: data.identifier || null,
     status,
     metadata: data.metadata || {},
+    assigned_to: data.assigned_to || null,
     created_at: createdAt,
   };
 
@@ -171,6 +173,12 @@ export async function updateAsset(
     updates.push('metadata = ?');
     values.push(JSON.stringify(data.metadata));
     changes.metadata = { from: existing.metadata, to: data.metadata };
+  }
+
+  if (data.assigned_to !== undefined) {
+    updates.push('assigned_to = ?');
+    values.push(data.assigned_to);
+    changes.assigned_to = { from: existing.assigned_to, to: data.assigned_to };
   }
 
   if (updates.length === 0) {
