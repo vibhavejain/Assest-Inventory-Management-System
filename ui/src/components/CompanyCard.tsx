@@ -17,12 +17,10 @@ export function CompanyCard({ company, onDelete }: CompanyCardProps) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [assigning, setAssigning] = useState(false);
 
   async function loadDetails() {
-    if (loaded) return;
     setLoading(true);
     
     const [usersRes, assetsRes, logsRes, allUsersRes] = await Promise.all([
@@ -46,7 +44,6 @@ export function CompanyCard({ company, onDelete }: CompanyCardProps) {
     }
 
     setLoading(false);
-    setLoaded(true);
   }
 
   function getUserName(userId: string): string {

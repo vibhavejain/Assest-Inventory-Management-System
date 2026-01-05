@@ -16,12 +16,10 @@ export function UserCard({ user, onDelete }: UserCardProps) {
   const [assignedAssets, setAssignedAssets] = useState<Asset[]>([]);
   const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<string>('');
   const [assigning, setAssigning] = useState(false);
 
   async function loadDetails() {
-    if (loaded) return;
     setLoading(true);
     
     const [accessRes, logsRes, companiesRes, assetsRes] = await Promise.all([
@@ -31,8 +29,10 @@ export function UserCard({ user, onDelete }: UserCardProps) {
       getAssets({ limit: 100 }),
     ]);
 
+    let userCompanyIds: string[] = [];
     if (accessRes.success && accessRes.data) {
       setCompanyAccess(accessRes.data);
+      userCompanyIds = accessRes.data.map((a) => a.company_id);
     }
     if (logsRes.success && logsRes.data) {
       setAuditLogs(logsRes.data);
@@ -41,12 +41,15 @@ export function UserCard({ user, onDelete }: UserCardProps) {
       setCompanies(companiesRes.data);
     }
     if (assetsRes.success && assetsRes.data) {
+      // Show all assets assigned to this user
       setAssignedAssets(assetsRes.data.filter((a) => a.assigned_to === user.id));
-      setAvailableAssets(assetsRes.data.filter((a) => !a.assigned_to));
+      // Only show unassigned assets from companies the user belongs to
+      setAvailableAssets(assetsRes.data.filter((a) => 
+        !a.assigned_to && userCompanyIds.includes(a.company_id)
+      ));
     }
 
     setLoading(false);
-    setLoaded(true);
   }
 
   async function handleAssignAsset() {

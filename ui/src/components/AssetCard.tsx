@@ -16,40 +16,37 @@ export function AssetCard({ asset, onDelete, onUpdate }: AssetCardProps) {
   const [users, setUsers] = useState<UserType[]>([]);
   const [assignedUser, setAssignedUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   async function loadDetails() {
-    if (loaded) return;
     setLoading(true);
     
     const [logsRes, companiesRes, usersRes] = await Promise.all([
       getAuditLogs({ company_id: asset.company_id, limit: 10 }),
       getCompanies({ limit: 100 }),
-      getUsers({ limit: 100 }),
+      getUsers({ company_id: asset.company_id, limit: 100 }),
     ]);
 
     if (logsRes.success && logsRes.data) {
       const assetLogs = logsRes.data.filter(
-        (log) => log.entity_type === 'asset' && log.entity_id === asset.id
+        (log: AuditLog) => log.entity_type === 'asset' && log.entity_id === asset.id
       );
       setAuditLogs(assetLogs);
     }
     if (companiesRes.success && companiesRes.data) {
-      const found = companiesRes.data.find((c) => c.id === asset.company_id);
+      const found = companiesRes.data.find((c: Company) => c.id === asset.company_id);
       setCompany(found || null);
     }
     if (usersRes.success && usersRes.data) {
       setUsers(usersRes.data);
       if (asset.assigned_to) {
-        const assigned = usersRes.data.find((u) => u.id === asset.assigned_to);
+        const assigned = usersRes.data.find((u: UserType) => u.id === asset.assigned_to);
         setAssignedUser(assigned || null);
       }
     }
 
     setLoading(false);
-    setLoaded(true);
   }
 
   async function handleAssignUser() {
