@@ -330,6 +330,13 @@ export function validateUpdateAsset(data: unknown): ValidationResult {
     }
   }
 
+  if (body.assigned_to !== undefined) {
+    hasUpdate = true;
+    if (body.assigned_to !== null && typeof body.assigned_to !== 'string') {
+      addError(result, 'assigned_to', 'assigned_to must be a string or null');
+    }
+  }
+
   if (!hasUpdate) {
     addError(result, '_root', 'At least one field must be provided for update');
   }
@@ -416,6 +423,7 @@ export function asCreateAssetRequest(data: unknown): CreateAssetRequest {
     identifier: d.identifier as string | undefined,
     status: d.status as AssetStatus | undefined,
     metadata: d.metadata as Record<string, unknown> | undefined,
+    assigned_to: d.assigned_to as string | undefined,
   };
 }
 
@@ -427,5 +435,6 @@ export function asUpdateAssetRequest(data: unknown): UpdateAssetRequest {
     identifier: d.identifier as string | null | undefined,
     status: d.status as AssetStatus | undefined,
     metadata: d.metadata as Record<string, unknown> | undefined,
+    assigned_to: d.assigned_to as string | null | undefined,
   };
 }

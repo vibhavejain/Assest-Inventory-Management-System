@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, Users, Package, Clock, Trash2, FileText, ExternalLink } from 'lucide-react';
-import { Badge, getStatusVariant, getRoleVariant, ExpandableCard, ActivityItem } from './ui';
-import { getCompanyUsers, getAssets, getAuditLogs } from '../api';
-import type { Company, CompanyAccess, Asset, AuditLog } from '../types';
+import { Badge, getStatusVariant, getRoleVariant, ExpandableCard, ActivityItem, Select, Button } from './ui';
+import { getCompanyUsers, getAssets, getAuditLogs, getUsers, updateAsset } from '../api';
+import type { Company, CompanyAccess, Asset, AuditLog, User } from '../types';
 
 interface CompanyCardProps {
   company: Company;
@@ -12,24 +12,28 @@ interface CompanyCardProps {
 
 export function CompanyCard({ company, onDelete }: CompanyCardProps) {
   const navigate = useNavigate();
-  const [users, setUsers] = useState<CompanyAccess[]>([]);
+  const [companyUsers, setCompanyUsers] = useState<CompanyAccess[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [assigning, setAssigning] = useState(false);
 
   async function loadDetails() {
     if (loaded) return;
     setLoading(true);
     
-    const [usersRes, assetsRes, logsRes] = await Promise.all([
-      getCompanyUsers(company.id, { limit: 5 }),
-      getAssets({ company_id: company.id, limit: 5 }),
+    const [usersRes, assetsRes, logsRes, allUsersRes] = await Promise.all([
+      getCompanyUsers(company.id, { limit: 10 }),
+      getAssets({ company_id: company.id, limit: 10 }),
       getAuditLogs({ company_id: company.id, limit: 10 }),
+      getUsers({ limit: 100 }),
     ]);
 
     if (usersRes.success && usersRes.data) {
-      setUsers(usersRes.data);
+      setCompanyUsers(usersRes.data);
     }
     if (assetsRes.success && assetsRes.data) {
       setAssets(assetsRes.data);
@@ -37,9 +41,32 @@ export function CompanyCard({ company, onDelete }: CompanyCardProps) {
     if (logsRes.success && logsRes.data) {
       setAuditLogs(logsRes.data);
     }
+    if (allUsersRes.success && allUsersRes.data) {
+      setAllUsers(allUsersRes.data);
+    }
 
     setLoading(false);
     setLoaded(true);
+  }
+
+  function getUserName(userId: string): string {
+    const user = allUsers.find(u => u.id === userId);
+    return user?.name || userId.slice(0, 8) + '...';
+  }
+
+  async function handleAssignAssetToUser() {
+    if (!selectedUserId) return;
+    // Find an unassigned asset to assign
+    const unassignedAsset = assets.find(a => !a.assigned_to);
+    if (!unassignedAsset) return;
+    
+    setAssigning(true);
+    const res = await updateAsset(unassignedAsset.id, { assigned_to: selectedUserId });
+    if (res.success && res.data) {
+      setAssets(assets.map(a => a.id === unassignedAsset.id ? res.data! : a));
+      setSelectedUserId('');
+    }
+    setAssigning(false);
   }
 
   function getActionIcon(action: string) {
@@ -119,27 +146,27 @@ export function CompanyCard({ company, onDelete }: CompanyCardProps) {
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
               <Users size={16} />
-              Users ({users.length})
+              Users ({companyUsers.length})
             </h4>
-            {users.length === 0 ? (
+            {companyUsers.length === 0 ? (
               <p className="text-sm text-text-secondary italic">No users assigned</p>
             ) : (
               <div className="space-y-2">
-                {users.slice(0, 3).map((access) => (
+                {companyUsers.slice(0, 3).map((access) => (
                   <div
                     key={access.id}
                     className="flex items-center justify-between p-2 bg-surface rounded-lg border border-border/50"
                   >
                     <span className="text-sm text-text-primary truncate">
-                      {access.user_id.slice(0, 8)}...
+                      {getUserName(access.user_id)}
                     </span>
                     <Badge variant={getRoleVariant(access.role)}>
                       {access.role}
                     </Badge>
                   </div>
                 ))}
-                {users.length > 3 && (
-                  <p className="text-xs text-text-secondary">+{users.length - 3} more</p>
+                {companyUsers.length > 3 && (
+                  <p className="text-xs text-text-secondary">+{companyUsers.length - 3} more</p>
                 )}
               </div>
             )}
@@ -152,15 +179,22 @@ export function CompanyCard({ company, onDelete }: CompanyCardProps) {
               Assets ({assets.length})
             </h4>
             {assets.length === 0 ? (
-              <p className="text-sm text-text-secondary italic">No assets</p>
+              <p className="text-sm text-text-secondary italic mb-3">No assets</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 mb-3">
                 {assets.slice(0, 3).map((asset) => (
                   <div
                     key={asset.id}
                     className="flex items-center justify-between p-2 bg-surface rounded-lg border border-border/50"
                   >
-                    <span className="text-sm text-text-primary truncate">{asset.name}</span>
+                    <div className="truncate">
+                      <span className="text-sm text-text-primary">{asset.name}</span>
+                      {asset.assigned_to && (
+                        <span className="text-xs text-text-secondary ml-2">
+                          → {getUserName(asset.assigned_to)}
+                        </span>
+                      )}
+                    </div>
                     <Badge variant={getStatusVariant(asset.status)}>
                       {asset.type}
                     </Badge>
@@ -168,6 +202,27 @@ export function CompanyCard({ company, onDelete }: CompanyCardProps) {
                 ))}
                 {assets.length > 3 && (
                   <p className="text-xs text-text-secondary">+{assets.length - 3} more</p>
+                )}
+              </div>
+            )}
+            {assets.some(a => !a.assigned_to) && allUsers.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-border/50">
+                <p className="text-xs text-text-secondary">Assign unassigned asset to:</p>
+                <Select
+                  placeholder="Select user"
+                  options={allUsers.map((u) => ({ value: u.id, label: u.name }))}
+                  value={selectedUserId}
+                  onChange={(e) => setSelectedUserId(e.target.value)}
+                />
+                {selectedUserId && (
+                  <Button
+                    size="sm"
+                    onClick={handleAssignAssetToUser}
+                    loading={assigning}
+                    className="w-full"
+                  >
+                    Assign Asset
+                  </Button>
                 )}
               </div>
             )}

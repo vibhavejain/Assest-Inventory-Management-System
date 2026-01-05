@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Building2, Clock, Trash2, FileText } from 'lucide-react';
-import { Badge, getStatusVariant, getRoleVariant, ExpandableCard, ActivityItem } from './ui';
-import { getUserCompanies, getUserAuditLogs, getCompanies } from '../api';
-import type { User, CompanyAccess, AuditLog, Company } from '../types';
+import { Building2, Clock, Trash2, FileText, Package } from 'lucide-react';
+import { Badge, getStatusVariant, getRoleVariant, ExpandableCard, ActivityItem, Select, Button } from './ui';
+import { getUserCompanies, getUserAuditLogs, getCompanies, getAssets, updateAsset } from '../api';
+import type { User, CompanyAccess, AuditLog, Company, Asset } from '../types';
 
 interface UserCardProps {
   user: User;
@@ -13,17 +13,22 @@ export function UserCard({ user, onDelete }: UserCardProps) {
   const [companyAccess, setCompanyAccess] = useState<CompanyAccess[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [assignedAssets, setAssignedAssets] = useState<Asset[]>([]);
+  const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [selectedAssetId, setSelectedAssetId] = useState<string>('');
+  const [assigning, setAssigning] = useState(false);
 
   async function loadDetails() {
     if (loaded) return;
     setLoading(true);
     
-    const [accessRes, logsRes, companiesRes] = await Promise.all([
+    const [accessRes, logsRes, companiesRes, assetsRes] = await Promise.all([
       getUserCompanies(user.id),
       getUserAuditLogs(user.id, { limit: 10 }),
       getCompanies({ limit: 100 }),
+      getAssets({ limit: 100 }),
     ]);
 
     if (accessRes.success && accessRes.data) {
@@ -35,9 +40,38 @@ export function UserCard({ user, onDelete }: UserCardProps) {
     if (companiesRes.success && companiesRes.data) {
       setCompanies(companiesRes.data);
     }
+    if (assetsRes.success && assetsRes.data) {
+      setAssignedAssets(assetsRes.data.filter((a) => a.assigned_to === user.id));
+      setAvailableAssets(assetsRes.data.filter((a) => !a.assigned_to));
+    }
 
     setLoading(false);
     setLoaded(true);
+  }
+
+  async function handleAssignAsset() {
+    if (!selectedAssetId) return;
+    setAssigning(true);
+    const res = await updateAsset(selectedAssetId, { assigned_to: user.id });
+    if (res.success && res.data) {
+      setAssignedAssets([...assignedAssets, res.data]);
+      setAvailableAssets(availableAssets.filter((a) => a.id !== selectedAssetId));
+      setSelectedAssetId('');
+    }
+    setAssigning(false);
+  }
+
+  async function handleUnassignAsset(assetId: string) {
+    setAssigning(true);
+    const res = await updateAsset(assetId, { assigned_to: null });
+    if (res.success && res.data) {
+      const asset = assignedAssets.find((a) => a.id === assetId);
+      if (asset) {
+        setAssignedAssets(assignedAssets.filter((a) => a.id !== assetId));
+        setAvailableAssets([...availableAssets, { ...asset, assigned_to: null }]);
+      }
+    }
+    setAssigning(false);
   }
 
   function getCompanyName(companyId: string): string {
@@ -110,7 +144,7 @@ export function UserCard({ user, onDelete }: UserCardProps) {
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Company Assignments */}
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
@@ -137,6 +171,55 @@ export function UserCard({ user, onDelete }: UserCardProps) {
                     </Badge>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Assigned Assets */}
+          <div>
+            <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+              <Package size={16} />
+              Assigned Assets ({assignedAssets.length})
+            </h4>
+            {assignedAssets.length === 0 ? (
+              <p className="text-sm text-text-secondary italic mb-3">No assets assigned</p>
+            ) : (
+              <div className="space-y-2 mb-3 max-h-32 overflow-y-auto">
+                {assignedAssets.map((asset) => (
+                  <div
+                    key={asset.id}
+                    className="flex items-center justify-between p-2 bg-surface rounded-lg border border-border/50"
+                  >
+                    <span className="text-sm text-text-primary truncate">{asset.name}</span>
+                    <button
+                      onClick={() => handleUnassignAsset(asset.id)}
+                      disabled={assigning}
+                      className="text-xs text-text-secondary hover:text-error"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {availableAssets.length > 0 && (
+              <div className="space-y-2">
+                <Select
+                  placeholder="Select asset to assign"
+                  options={availableAssets.map((a) => ({ value: a.id, label: a.name }))}
+                  value={selectedAssetId}
+                  onChange={(e) => setSelectedAssetId(e.target.value)}
+                />
+                {selectedAssetId && (
+                  <Button
+                    size="sm"
+                    onClick={handleAssignAsset}
+                    loading={assigning}
+                    className="w-full"
+                  >
+                    Assign Asset
+                  </Button>
+                )}
               </div>
             )}
           </div>
