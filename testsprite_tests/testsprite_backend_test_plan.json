@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "health check api returns service status and timestamp",
+    "description": "Verify that the GET /health endpoint returns a 200 status code with a JSON body containing a status field with value 'ok' and a valid timestamp field in date-time format."
+  },
+  {
+    "id": "TC002",
+    "title": "companies api create company with valid and invalid data",
+    "description": "Test the POST /companies endpoint to create a new company with valid data resulting in a 201 response, and test with missing required fields or duplicate company name resulting in a 400 validation error."
+  },
+  {
+    "id": "TC003",
+    "title": "companies api list companies with pagination and filtering",
+    "description": "Verify the GET /companies endpoint returns a paginated list of companies, supports limit and offset query parameters, and filters companies by status when provided."
+  },
+  {
+    "id": "TC004",
+    "title": "companies api get update and delete company by id",
+    "description": "Test GET /companies/{id} returns company details for valid ID and 404 for invalid ID; PATCH /companies/{id} updates company fields and returns 200 or 404 if not found; DELETE /companies/{id} deletes the company and returns 200 or 404 if not found."
+  },
+  {
+    "id": "TC005",
+    "title": "users api create user with valid and invalid data",
+    "description": "Test POST /users to create a new user with valid email and name resulting in 201 response, and test with missing required fields or duplicate email resulting in 400 validation error."
+  },
+  {
+    "id": "TC006",
+    "title": "users api list users with pagination and filters",
+    "description": "Verify GET /users returns a paginated list of users, supports limit, offset, status, and company_id filters correctly."
+  },
+  {
+    "id": "TC007",
+    "title": "users api update delete and get user related data",
+    "description": "Test PATCH /users/{id} updates user data and returns 200 or 404 if user not found; DELETE /users/{id} deletes user and returns 200 or 404; GET /users/{id}/companies returns companies user belongs to or 404 if user not found; GET /users/{id}/audit-logs returns audit logs with pagination or 404 if user not found."
+  },
+  {
+    "id": "TC008",
+    "title": "assets api create list update and delete assets",
+    "description": "Test POST /assets creates asset with required fields and returns 201 or 400 for validation errors; GET /assets lists assets with pagination and filters; PATCH /assets/{id} updates asset and returns 200 or 404; DELETE /assets/{id} deletes asset and returns 200 or 404."
+  },
+  {
+    "id": "TC009",
+    "title": "company access api manage user access to company",
+    "description": "Verify GET /companies/{companyId}/users lists users with access or 404 if company not found; POST /companies/{companyId}/users grants access with valid data returning 201 or 400 for validation errors; DELETE /companies/{companyId}/users/{userId} revokes access returning 200 or 404 if access not found."
+  },
+  {
+    "id": "TC010",
+    "title": "audit logs api list audit logs with filters",
+    "description": "Test GET /audit-logs returns a paginated list of audit logs and supports filtering by entity_type and entity_id query parameters."
+  }
+]

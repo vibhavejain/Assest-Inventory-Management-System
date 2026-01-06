@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8787",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "Assest-Inventory-Management-System",
+    "projectPath": "c:\\Projects\\Asset-Inventory-Management-System\\Assest-Inventory-Management-System",
+    "testIds": [
+      "TC009"
+    ],
+    "additionalInstruction": "MANDATORY CODE PATTERN - USE THIS EXACT CODE:\nFor extracting IDs after POST requests:\n```python\nresp = requests.post(url, json=payload)\ndata = resp.json()\nentity_id = data.get('data', data).get('id')  # MUST use this pattern\n```\nThe API returns {\"success\": true, \"data\": {\"id\": \"...\"}}. \nNEVER use resp.json().get('id') - it will return None.\nDELETE /companies/{companyId}/users/{userId} returns 204, not 200.",
+    "envs": {
+      "API_KEY": "sk-user-_yxJJ9U4jj78atQQ_-GMVEQZYn-b-L8_xu-YGDx-Jp-FQZQWu_newJMGgHR4taHq-lghUvAyg7MqJiL7x9JHA9sXgMXhgQ7ytSMSmIOd_zdctB18SLJ9jCez9L3ASJ2ZuTA"
+    }
+  },
+  "proxy": "http://a37088c6-0d74-409d-9d43-2eb5b278efb5:FLRINWFyvX6NtcaQ5rT4P5LpcMjqOTUx@tun.testsprite.com:8080"
+}
