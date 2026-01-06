@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "asset-inventory-ui",
+    "projectPath": "c:\\Projects\\Asset-Inventory-Management-System\\Assest-Inventory-Management-System\\ui",
+    "testIds": [],
+    "additionalInstruction": "Frontend React app running on http://localhost:3000. Test navigation, page rendering, and UI interactions. No login required.",
+    "envs": {
+      "API_KEY": "sk-user-_yxJJ9U4jj78atQQ_-GMVEQZYn-b-L8_xu-YGDx-Jp-FQZQWu_newJMGgHR4taHq-lghUvAyg7MqJiL7x9JHA9sXgMXhgQ7ytSMSmIOd_zdctB18SLJ9jCez9L3ASJ2ZuTA"
+    }
+  },
+  "proxy": "http://9cb71829-b508-47b0-91cc-f29acad5dd3a:KgjIpeJZdaesyGLbJ9wj7rSYwhS6L2Ww@tun.testsprite.com:8080"
+}

@@ -1,0 +1,90 @@
+{
+  "tech_stack": ["TypeScript", "React 18", "Vite", "TailwindCSS", "React Router DOM", "Lucide React Icons"],
+  "features": [
+    {
+      "name": "Dashboard Page",
+      "description": "Main dashboard showing KPI cards (Companies, Users, Assets, Audit Logs counts), recent companies list, and recent assets list. Fetches data from API on load.",
+      "files": ["src/pages/Dashboard.tsx"]
+    },
+    {
+      "name": "Companies Page",
+      "description": "Lists all companies with status badges. Allows creating new companies via modal form. Shows company cards with name, description, and status.",
+      "files": ["src/pages/Companies.tsx", "src/components/CompanyCard.tsx"]
+    },
+    {
+      "name": "Company Detail Page",
+      "description": "Shows detailed view of a single company including its users with access and assets. Allows editing company details and managing user access.",
+      "files": ["src/pages/CompanyDetail.tsx"]
+    },
+    {
+      "name": "Users Page",
+      "description": "Lists all users with their email, name, status, and primary company. Allows creating new users via modal form.",
+      "files": ["src/pages/Users.tsx", "src/components/UserCard.tsx"]
+    },
+    {
+      "name": "Assets Page",
+      "description": "Lists all assets with type, identifier, status, and assigned company. Allows creating new assets via modal form with company selection.",
+      "files": ["src/pages/Assets.tsx", "src/components/AssetCard.tsx"]
+    },
+    {
+      "name": "Audit Logs Page",
+      "description": "Displays audit logs filtered by company. Requires selecting a company first. Shows entity type, action, timestamp, and changes.",
+      "files": ["src/pages/AuditLogs.tsx", "src/components/AuditLogCard.tsx"]
+    },
+    {
+      "name": "Settings Page",
+      "description": "Application settings page with theme toggle (light/dark mode) and other configuration options.",
+      "files": ["src/pages/Settings.tsx"]
+    },
+    {
+      "name": "Layout Components",
+      "description": "Main layout wrapper with sidebar navigation and top navigation bar. Sidebar shows navigation links to all pages.",
+      "files": ["src/components/layout/Layout.tsx", "src/components/layout/Sidebar.tsx", "src/components/layout/TopNav.tsx"]
+    },
+    {
+      "name": "UI Components Library",
+      "description": "Reusable UI components including Button, Card, Badge, Input, Select, Modal, Table, Loading spinner, and EmptyState.",
+      "files": ["src/components/ui/Button.tsx", "src/components/ui/Card.tsx", "src/components/ui/Badge.tsx", "src/components/ui/Input.tsx", "src/components/ui/Select.tsx", "src/components/ui/Modal.tsx", "src/components/ui/Table.tsx", "src/components/ui/Loading.tsx", "src/components/ui/EmptyState.tsx", "src/components/ui/ExpandableCard.tsx"]
+    },
+    {
+      "name": "API Service Layer",
+      "description": "Centralized API functions for all backend communication. Includes functions for companies, users, assets, company access, and audit logs CRUD operations.",
+      "files": ["src/api/index.ts"]
+    },
+    {
+      "name": "Auth Context",
+      "description": "React context for authentication state management (placeholder for future auth implementation).",
+      "files": ["src/context/AuthContext.tsx"]
+    },
+    {
+      "name": "Theme Context",
+      "description": "React context for theme management (light/dark mode toggle).",
+      "files": ["src/context/ThemeContext.tsx"]
+    },
+    {
+      "name": "Type Definitions",
+      "description": "TypeScript interfaces for all data models: Company, User, Asset, AuditLog, CompanyAccess, and API request/response types.",
+      "files": ["src/types/index.ts"]
+    },
+    {
+      "name": "App Router",
+      "description": "Main application routing configuration using React Router. Defines routes for Dashboard, Companies, Users, Assets, Audit Logs, and Settings.",
+      "files": ["src/App.tsx", "src/main.tsx"]
+    }
+  ],
+  "routes": [
+    {"path": "/", "component": "Dashboard", "description": "Main dashboard with KPI overview"},
+    {"path": "/companies", "component": "Companies", "description": "List and create companies"},
+    {"path": "/companies/:id", "component": "CompanyDetail", "description": "View and edit single company"},
+    {"path": "/users", "component": "Users", "description": "List and create users"},
+    {"path": "/assets", "component": "Assets", "description": "List and create assets"},
+    {"path": "/audit-logs", "component": "AuditLogs", "description": "View audit logs by company"},
+    {"path": "/settings", "component": "Settings", "description": "Application settings"}
+  ],
+  "test_guidance": {
+    "base_url": "http://localhost:3000",
+    "navigation": "Use sidebar links to navigate between pages. Sidebar is always visible on the left.",
+    "forms": "Modal forms are used for creating new entities. Click 'Add' or 'Create' buttons to open modals.",
+    "api_dependency": "Frontend connects to backend API. Ensure backend is running for full functionality tests."
+  }
+}

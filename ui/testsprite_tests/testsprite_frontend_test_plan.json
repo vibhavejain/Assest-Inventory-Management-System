@@ -1,0 +1,568 @@
+[
+  {
+    "id": "TC001",
+    "title": "Dashboard KPI Cards Display Correct Counts",
+    "description": "Verify that the Dashboard page displays accurate counts for Companies, Users, Assets, and Audit Logs based on the API data.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Dashboard page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify KPI cards for Companies, Users, Assets, and Audit Logs are visible."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify each KPI card's count matches the mocked backend API response."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Dashboard Recent Companies and Assets List Display",
+    "description": "Check that the Dashboard shows recent companies and assets with correct data fetched from the API.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Go to the Dashboard page."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm recent companies list is populated with correct company names and statuses."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm recent assets list is populated with correct asset identifiers and types."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Companies Page - List All Companies with Pagination and Status Filter",
+    "description": "Ensure the Companies page lists all companies with pagination support and allows filtering by status badges.",
+    "category": "integration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the Companies page using the sidebar."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify list of companies is visible with name, description, and status badge."
+      },
+      {
+        "type": "action",
+        "description": "Apply status filter and verify list updates accordingly."
+      },
+      {
+        "type": "action",
+        "description": "If pagination is present, navigate through pages and verify correct companies are displayed."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Companies Page - Create New Company Via Modal",
+    "description": "Test creating a new company through the modal form opens properly, input fields are focused, and submission creates the company.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "On Companies page, click the \"Add Company\" button to open modal."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify modal form opens, first input field is focused, and keyboard focus is trapped inside."
+      },
+      {
+        "type": "action",
+        "description": "Fill in valid company details (name, description, status)."
+      },
+      {
+        "type": "action",
+        "description": "Submit the form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify API call is made with correct data."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm new company appears in the list and modal closes."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Company Detail Page - View and Edit Company Details",
+    "description": "Verify the Company Detail page displays all company information including users and assets, supports editing details, and saving changes updates backend and UI.",
+    "category": "integration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to a specific company's detail page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify company details (name, description, status) are displayed correctly."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify related users and assets sections are present and populated."
+      },
+      {
+        "type": "action",
+        "description": "Edit company details (e.g. name, status) in the form."
+      },
+      {
+        "type": "action",
+        "description": "Save the updated details."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify API update call was made and response successful."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm UI reflects updated company details."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Users Page - List, Filter, Create and Delete Users",
+    "description": "Test user listing with filters (status, company), user creation via modal, and user deletion including confirmation dialogs.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Go to Users page from sidebar."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify list of users shows email, name, status, and primary company."
+      },
+      {
+        "type": "action",
+        "description": "Apply filtering by status and company and verify filtered results."
+      },
+      {
+        "type": "action",
+        "description": "Click 'Add User' button to open creation modal."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm modal opens with focus on first input."
+      },
+      {
+        "type": "action",
+        "description": "Fill in valid user details and submit."
+      },
+      {
+        "type": "assertion",
+        "description": "Check API user creation call sent and user appears in list."
+      },
+      {
+        "type": "action",
+        "description": "Select a user and trigger delete action."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify delete confirmation dialog is shown."
+      },
+      {
+        "type": "action",
+        "description": "Confirm deletion."
+      },
+      {
+        "type": "assertion",
+        "description": "Check delete API call is made and user is removed from list."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Assets Page - List, Filter, Create, Assign, and Conditional Delete",
+    "description": "Verify asset listing shows correct details, allows filtering, enables asset creation with company assignment, and enforces conditional deletion rules.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to Assets page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify asset list shows type, identifier, status, and assigned company."
+      },
+      {
+        "type": "action",
+        "description": "Apply filters and confirm list updates correctly."
+      },
+      {
+        "type": "action",
+        "description": "Open 'Add Asset' modal form via button."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm modal is focused and accessible."
+      },
+      {
+        "type": "action",
+        "description": "Fill out asset details including selecting a company and submit."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify API call for asset creation is successful and asset appears in list."
+      },
+      {
+        "type": "action",
+        "description": "Attempt deleting an asset that is assigned to a company."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm deletion is blocked or warning is shown."
+      },
+      {
+        "type": "action",
+        "description": "Delete an unassigned asset."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify asset is deleted and removed from UI."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Audit Logs Page - Filter and Pagination Functionality",
+    "description": "Ensure audit logs are filtered by selected company, entity type, and action with paginated navigation working correctly.",
+    "category": "integration",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to Audit Logs page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify prompt to select a company if none selected."
+      },
+      {
+        "type": "action",
+        "description": "Select a company to view audit logs."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify audit logs list shows entity type, action, timestamp, and changes."
+      },
+      {
+        "type": "action",
+        "description": "Apply filters for entity type and action and verify filtered results."
+      },
+      {
+        "type": "action",
+        "description": "Navigate through pages using pagination controls."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm audit logs update according to pagination."
+      },
+      {
+        "type": "action",
+        "description": "Open detailed view of an audit log item."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify detailed audit log information is displayed correctly."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Settings Page - Toggle Theme and Save Preferences",
+    "description": "Verify user can toggle between light and dark mode themes and settings persist appropriately.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Go to the Settings page."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm current theme setting is displayed."
+      },
+      {
+        "type": "action",
+        "description": "Toggle the theme switch to switch between light and dark mode."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI theme changes accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Reload the page."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm selected theme preference is retained."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Sidebar Navigation Functionality Across Pages",
+    "description": "Validate sidebar navigation links route to correct pages and the sidebar remains visible and functional across app pages.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load the application and observe sidebar presence."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sidebar is visible with navigation links to Dashboard, Companies, Users, Assets, Audit Logs, and Settings."
+      },
+      {
+        "type": "action",
+        "description": "Click each sidebar link one by one."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm navigation to correct page based on link clicked."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure sidebar remains visible and functional after each navigation."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Modal Forms Accessibility and Focus Management",
+    "description": "Test that modal forms open correctly, trap keyboard focus, manage tab order, and close cleanly.",
+    "category": "accessibility",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger modal form opening for creating/editing an entity."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify keyboard focus is set on first input field."
+      },
+      {
+        "type": "action",
+        "description": "Tab through modal elements to ensure focus is trapped within modal."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm no focus escapes to background page elements."
+      },
+      {
+        "type": "action",
+        "description": "Close the modal using close button or Escape key."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify modal closes and focus returns to triggering element."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Visual Regression Testing Across Device Breakpoints",
+    "description": "Capture visual snapshots of key components and pages across various device viewport sizes and detect UI regressions.",
+    "category": "visual regression",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load key pages (Dashboard, Companies, Users, Assets, Audit Logs, Settings)."
+      },
+      {
+        "type": "action",
+        "description": "Capture screenshots at desktop, tablet, and mobile viewport widths."
+      },
+      {
+        "type": "assertion",
+        "description": "Compare screenshots against baseline images to identify unexpected UI changes."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Accessibility Validation Using axe-core",
+    "description": "Run automated axe-core accessibility scans on major pages and UI components to ensure zero critical violations per WCAG 2.1 AA.",
+    "category": "accessibility",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to pages: Dashboard, Companies, Company Detail, Users, Assets, Audit Logs, Settings."
+      },
+      {
+        "type": "action",
+        "description": "Run axe-core accessibility scan on each page and major UI components."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no critical accessibility violations are reported."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "API Failure Handling During Data Fetch",
+    "description": "Simulate backend API failures to verify the frontend gracefully handles errors and displays appropriate messages.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Mock API failure for data fetching on Dashboard or Companies page."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to affected page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message or UI fallback is shown to the user."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm application remains stable and responsive."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Audit Log Reflects UI Triggered Create/Update/Delete Actions",
+    "description": "Verify that all create, update, and delete actions performed via UI correctly generate corresponding audit log entries.",
+    "category": "integration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform entity creation (e.g. create a new company or user) through UI modal form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify audit log entry is created with correct entity type, action, and details."
+      },
+      {
+        "type": "action",
+        "description": "Edit an existing entity’s details."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify audit log entry for update is generated with timestamp and changes."
+      },
+      {
+        "type": "action",
+        "description": "Delete an entity via UI."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm audit log for delete action exists with correct metadata."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Loading and Empty State Visuals for UI Components",
+    "description": "Test that loading spinners appear appropriately during API calls and EmptyState UI is shown when lists have no data.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate slow API response or API returning empty list for Companies, Users, or Assets page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify loading spinner is displayed while fetching data."
+      },
+      {
+        "type": "assertion",
+        "description": "When data is empty, confirm EmptyState component or message is shown."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Expandable Cards Interaction and Data Update",
+    "description": "Verify that interactive cards like AssetCard and UserCard expand/collapse and support data updates through API calls with UI refresh.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to page containing AssetCards or UserCards."
+      },
+      {
+        "type": "action",
+        "description": "Click on card expand control."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm additional detailed information is revealed."
+      },
+      {
+        "type": "action",
+        "description": "Edit details within expanded card and save changes."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify API update call and reflect updated data on card."
+      },
+      {
+        "type": "action",
+        "description": "Collapse the card."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm card returns to collapsed state."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "CI/CD Pipeline Test Execution and Stability",
+    "description": "Validate all automated tests run reliably and complete within defined time limits in CI/CD pipeline triggered on push and pull requests.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Push code changes to the repository."
+      },
+      {
+        "type": "action",
+        "description": "Observe GitHub Actions running the test suites."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm all tests pass successfully in unit, integration, E2E, visual regression, and accessibility stages."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify test runtime does not exceed specified limits."
+      }
+    ]
+  }
+]
