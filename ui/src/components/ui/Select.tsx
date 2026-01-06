@@ -10,6 +10,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   error?: string;
   options: SelectOption[];
   placeholder?: string;
+  'aria-label'?: string;
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(

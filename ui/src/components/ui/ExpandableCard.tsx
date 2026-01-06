@@ -18,15 +18,19 @@ export function ExpandableCard({
 
   return (
     <div className={`bg-surface border border-border rounded-xl overflow-hidden ${className}`}>
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-surface-muted/50 transition-colors text-left"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsExpanded(!isExpanded); } }}
+        className="w-full flex items-center justify-between p-4 hover:bg-surface-muted/50 transition-colors text-left cursor-pointer"
+        aria-expanded={isExpanded}
       >
         <div className="flex-1">{header}</div>
-        <div className="ml-4 text-text-secondary">
+        <div className="ml-4 text-text-secondary" aria-hidden="true">
           {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </div>
-      </button>
+      </div>
       {isExpanded && (
         <div className="border-t border-border p-4 bg-surface-muted/30">
           {children}

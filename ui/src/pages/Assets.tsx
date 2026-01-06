@@ -137,22 +137,28 @@ export function Assets() {
       <Card padding="sm">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2 text-text-secondary">
-            <Filter size={18} />
-            <span className="text-sm font-medium">Filters:</span>
+            <Filter size={18} aria-hidden="true" />
+            <span className="text-sm font-medium" id="filters-label">Filters:</span>
           </div>
           <Select
+            id="filter-type"
+            aria-label="Filter by asset type"
             options={[{ value: '', label: 'All Types' }, ...typeOptions]}
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             className="w-40"
           />
           <Select
+            id="filter-status"
+            aria-label="Filter by status"
             options={[{ value: '', label: 'All Statuses' }, ...statusOptions]}
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="w-40"
           />
           <Select
+            id="filter-company"
+            aria-label="Filter by company"
             options={[
               { value: '', label: 'All Companies' },
               ...companies.map((c) => ({ value: c.id, label: c.name })),

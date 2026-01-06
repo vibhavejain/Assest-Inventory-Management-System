@@ -15,7 +15,7 @@
   --color-surface: #FFFFFF;
   --color-surface-muted: #F1F3F6;
   --color-text-primary: #111827;
-  --color-text-secondary: #6B7280;
+  --color-text-secondary: #4B5563; /* Improved contrast ratio for WCAG AA compliance */
   --color-border: #E5E7EB;
 }
 
