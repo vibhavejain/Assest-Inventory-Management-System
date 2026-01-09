@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Building2, Users, Package, FileText, Plus } from 'lucide-react';
+import { ArrowLeft, Building2, Users, Package, FileText, Plus, Pencil } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -24,6 +24,7 @@ import {
   getUsers,
   addUserToCompany,
   createAsset,
+  updateCompany,
 } from '../api';
 import type { Company, CompanyAccess, Asset, AuditLog, User, CreateAssetRequest, AssetType, AssetStatus } from '../types';
 
@@ -54,6 +55,12 @@ export function CompanyDetail() {
   const [assetFormData, setAssetFormData] = useState<Partial<CreateAssetRequest>>({});
   const [addAssetSubmitting, setAddAssetSubmitting] = useState(false);
   const [addAssetError, setAddAssetError] = useState('');
+
+  // Edit Company modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState<{ name: string; status: string }>({ name: '', status: 'active' });
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editError, setEditError] = useState('');
 
   useEffect(() => {
     async function fetchCompany() {
@@ -139,6 +146,36 @@ export function CompanyDetail() {
     setAddUserSubmitting(false);
   }
 
+  function openEditModal() {
+    if (company) {
+      setEditFormData({ name: company.name, status: company.status });
+      setIsEditModalOpen(true);
+    }
+  }
+
+  async function handleEditCompany(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editFormData.name.trim() || !id) {
+      setEditError('Company name is required');
+      return;
+    }
+    setEditSubmitting(true);
+    setEditError('');
+
+    const res = await updateCompany(id, {
+      name: editFormData.name,
+      status: editFormData.status as 'active' | 'inactive',
+    });
+
+    if (res.success && res.data) {
+      setCompany(res.data);
+      setIsEditModalOpen(false);
+    } else {
+      setEditError(res.error?.message || 'Failed to update company');
+    }
+    setEditSubmitting(false);
+  }
+
   async function handleAddAsset(e: React.FormEvent) {
     e.preventDefault();
     if (!assetFormData.name?.trim() || !assetFormData.type || !id) {
@@ -215,9 +252,15 @@ export function CompanyDetail() {
               </p>
             </div>
           </div>
-          <Badge variant={getStatusVariant(company.status)} className="text-sm px-3 py-1">
-            {company.status}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" onClick={openEditModal} data-testid="edit-company-btn">
+              <Pencil size={16} />
+              Edit
+            </Button>
+            <Badge variant={getStatusVariant(company.status)} className="text-sm px-3 py-1">
+              {company.status}
+            </Badge>
+          </div>
         </div>
       </div>
 
@@ -500,6 +543,49 @@ export function CompanyDetail() {
             </Button>
             <Button type="submit" loading={addAssetSubmitting}>
               Add Asset
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Company Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditError('');
+        }}
+        title="Edit Company"
+        size="sm"
+      >
+        <form onSubmit={handleEditCompany} className="space-y-4">
+          <Input
+            label="Company Name"
+            placeholder="Enter company name"
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+            error={editError}
+            autoFocus
+          />
+          <Select
+            label="Status"
+            options={[
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' },
+            ]}
+            value={editFormData.status}
+            onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+          />
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={editSubmitting}>
+              Save Changes
             </Button>
           </div>
         </form>

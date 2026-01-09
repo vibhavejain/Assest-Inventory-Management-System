@@ -83,7 +83,7 @@ export function Companies() {
             Manage your organization tenants
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsModalOpen(true)} data-testid="add-company-btn">
           <Plus size={18} />
           Add Company
         </Button>

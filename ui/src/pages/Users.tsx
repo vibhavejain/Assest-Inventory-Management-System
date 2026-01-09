@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Plus, Users as UsersIcon } from 'lucide-react';
+import { Plus, Users as UsersIcon, Filter } from 'lucide-react';
 import {
   Button,
   Modal,
   Input,
   Select,
+  Card,
 } from '../components/ui';
 import { UserCard } from '../components/UserCard';
 import { getUsers, createUser, getCompanies, addUserToCompany, deleteUser } from '../api';
@@ -28,9 +29,16 @@ export function Users() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Filters
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterCompany, setFilterCompany] = useState<string>('');
+
   async function fetchUsers() {
     setLoading(true);
-    const res = await getUsers({ limit: 50 });
+    const params: Record<string, string | number> = { limit: 50 };
+    if (filterStatus) params.status = filterStatus;
+    if (filterCompany) params.company_id = filterCompany;
+    const res = await getUsers(params);
     if (res.success && res.data) {
       setUsers(res.data);
     }
@@ -38,9 +46,12 @@ export function Users() {
   }
 
   useEffect(() => {
-    fetchUsers();
     fetchCompanies();
   }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [filterStatus, filterCompany]);
 
   async function fetchCompanies() {
     const res = await getCompanies({ limit: 100 });
@@ -120,6 +131,39 @@ export function Users() {
           Add User
         </Button>
       </div>
+
+      {/* Filters */}
+      <Card padding="sm">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Filter size={18} aria-hidden="true" />
+            <span className="text-sm font-medium">Filters:</span>
+          </div>
+          <Select
+            id="filter-status"
+            aria-label="Filter by status"
+            options={[
+              { value: '', label: 'All Statuses' },
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' },
+            ]}
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="w-40"
+          />
+          <Select
+            id="filter-company"
+            aria-label="Filter by company"
+            options={[
+              { value: '', label: 'All Companies' },
+              ...companies.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+            value={filterCompany}
+            onChange={(e) => setFilterCompany(e.target.value)}
+            className="w-48"
+          />
+        </div>
+      </Card>
 
       {/* Users List */}
       {loading ? (

@@ -1,0 +1,90 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    name: Backend API Tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Wrangler dev server
+        run: |
+          npx wrangler dev --local &
+          sleep 10
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Health check
+        run: curl -f http://localhost:8787/health || exit 1
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    name: Frontend Build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./ui
+        run: npm ci
+
+      - name: Type check
+        working-directory: ./ui
+        run: npx tsc --noEmit
+
+      - name: Build
+        working-directory: ./ui
+        run: npm run build
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint Check
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./ui
+        run: npm ci
+
+      - name: TypeScript check (backend)
+        run: npx tsc --noEmit
+
+      - name: TypeScript check (frontend)
+        working-directory: ./ui
+        run: npx tsc --noEmit
